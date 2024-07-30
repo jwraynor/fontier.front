@@ -1,4 +1,7 @@
-import React, {useState, useCallback, useEffect} from 'react';
+import React, {useState, useCallback} from 'react';
+import {motion, AnimatePresence} from 'framer-motion';
+import {useDropzone} from 'react-dropzone';
+import {Plus, X} from 'lucide-react';
 import {Button} from "@/components/ui/button";
 import {
     Dialog,
@@ -9,36 +12,35 @@ import {
 } from "@/components/ui/dialog";
 import {useDatabase} from "@/hooks/useDatabase";
 import {useToast} from "@/components/ui/use-toast";
-import {useDropzone} from 'react-dropzone';
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
 
-interface FontCreationModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-}
-
-export function FontCreationModal({isOpen, onClose}: FontCreationModalProps) {
-    const [fontName, setFontName] = useState('');
+export function EnhancedFontCreationModal() {
+    const [isOpen, setIsOpen] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const {useUploadFont} = useDatabase();
     const {toast} = useToast();
-    const uploadFontMutation = useUploadFont();
-
-
-    const close = () => {
-        onClose();
-        //Reset the state
-        setFile(null);
-        setFontName('');
-        //Reset the mutation state
-        uploadFontMutation.reset();
-    }
+    const {isError, isSuccess, isPending, mutateAsync} = useUploadFont();
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         if (acceptedFiles.length > 0) {
+            //TODO: upload all files, not just the first one
             setFile(acceptedFiles[0]);
-            setFontName(acceptedFiles[0].name.split('.')[0]); // Set font name to file name without extension
+            setIsOpen(true);
+            console.log(acceptedFiles);
         }
     }, []);
+
+    if (isError) {
+        return (
+            <Alert variant="destructive">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                    Failed to create font. Please try again.
+                </AlertDescription>
+            </Alert>
+        );
+
+    }
 
     const {getRootProps, getInputProps, isDragActive} = useDropzone({
         onDrop,
@@ -65,15 +67,15 @@ export function FontCreationModal({isOpen, onClose}: FontCreationModalProps) {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            const {filePath} = await uploadFontMutation.mutateAsync(formData);
-
-            toast({
-                title: "Success",
-                description: "Font created successfully.",
-            });
-            //Clear the drag and drop area
+            await mutateAsync(formData);
+            if (isSuccess) {
+                toast({
+                    title: "Success",
+                    description: "Font created successfully.",
+                });
+            }
             setFile(null);
-            close();
+            setIsOpen(false);
         } catch (error) {
             toast({
                 title: "Error",
@@ -83,72 +85,69 @@ export function FontCreationModal({isOpen, onClose}: FontCreationModalProps) {
         }
     };
 
-    const getErrorMessage = (error: any) => {
-        try {
-            //Converts the axios error code message to a human readable format. the error code is at the end of the message
-            const message = error.message;
-            const code = parseInt(message.substring(message.lastIndexOf('status code ') + 12));
-            switch (code) {
-                case 413:
-                    return 'The font file is too large. Please upload a smaller file.';
-                case 415:
-                    return 'Invalid file format. Please upload a valid font file.';
-                case 409:
-                    return 'This font already exists in the database. The name is irrelevant, only the file\'s content matters.';
-                default:
-                    return message;
-            }
-        } catch (e) {
-            return error.message;
-        }
+    return (
+        <>
+            <div className="fixed inset-0 pointer-events-none">
+                <AnimatePresence>
+                    {isDragActive && (
+                        <motion.div
+                            initial={{opacity: 0}}
+                            animate={{opacity: 1}}
+                            exit={{opacity: 0}}
+                            className="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center"
+                        >
+                            <motion.div
+                                initial={{scale: 0.9}}
+                                animate={{scale: 1}}
+                                className="bg-white p-8 rounded-lg shadow-lg text-center"
+                            >
+                                <p className="text-2xl font-bold text-blue-600">Drop your font file here</p>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                <div {...getRootProps()} className="w-full h-full"/>
+            </div>
 
-    }
+            <motion.button
+                className="fixed bottom-4 right-4 bg-blue-500 text-white rounded-full p-2 shadow-lg"
+                whileHover={{scale: 1.1}}
+                whileTap={{scale: 0.9}}
+                onClick={() => setIsOpen(true)}
+            >
+                <Plus size={24}/>
+            </motion.button>
 
-    if (uploadFontMutation.isError) {
-        return (
-            <Dialog open={isOpen} onOpenChange={close}>
-                <DialogContent>
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Create New Font</DialogTitle>
                     </DialogHeader>
-                    <div className="p-4 bg-red-50 rounded-md">
-                        <p className="text-red-800">{getErrorMessage(uploadFontMutation.error)}</p>
-                    </div>
-                    <DialogFooter>
-                        <Button onClick={close}>Close</Button>
-                    </DialogFooter>
+                    <Button variant='ghost' onClick={() => setIsOpen(false)} className="absolute top-4 right-4">
+                        <X size={24}/>
+                    </Button>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="border-2 border-dashed rounded-md p-4 text-center">
+                            <input {...getInputProps()} />
+                            {file ? (
+                                <p>Selected file: {file.name}</p>
+                            ) : (
+                                <p>Drag 'n' drop a font file here, or click to select</p>
+                            )}
+                        </div>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={isPending}>
+                                {isPending ? 'Creating...' : 'Create Font'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
                 </DialogContent>
             </Dialog>
-        );
-    }
-
-    return (
-        <Dialog open={isOpen} onOpenChange={close}>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Create New Font</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div {...getRootProps()}
-                         className="border-2 border-dashed rounded-md p-4 text-center cursor-pointer hover:bg-gray-50 transition-colors">
-                        <input {...getInputProps()} />
-                        {
-                            isDragActive ?
-                                <p>Drop the font file here ...</p> :
-                                !file &&  <p>Drag 'n' drop a font file here, or click to select</p>
-                        }
-                        {file && <p className="mt-2">Selected file: {file.name}</p>}
-                    </div>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={close}>
-                            Cancel
-                        </Button>
-                        <Button type="submit" disabled={uploadFontMutation.isLoading}>
-                            {uploadFontMutation.isLoading ? 'Creating...' : 'Create Font'}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+        </>
     );
 }
+
+export default EnhancedFontCreationModal;

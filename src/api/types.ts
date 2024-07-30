@@ -42,3 +42,5 @@ export interface LibraryDistribution {
     libraryId: number;
     fontCount: number;
 }
+
+export type UploadFontResponse = Font | { filePath: string };

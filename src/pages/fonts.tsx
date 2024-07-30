@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Plus, Loader2 } from "lucide-react";
+import {  Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -10,13 +9,13 @@ import {
 } from "@/components/ui/card";
 import useDatabase from '@/hooks/useDatabase';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FontCreationModal } from '@/components/FontCreationModal';
+import { EnhancedFontCreationModal } from '@/components/FontCreationModal';
 import {Badge} from "@/components/ui/badge.tsx";
 
 export function FontsPage() {
     const { useFonts } = useDatabase();
     const { data: fonts, isLoading, error } = useFonts();
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    // const [isModalOpen, setIsModalOpen] = useState(false);
 
     if (isLoading) {
         return (
@@ -29,7 +28,7 @@ export function FontsPage() {
 
     if (error) {
         return (
-            <Alert variant="destructive" className="m-4">
+            <Alert variant="destructive">
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>
                     Failed to load fonts. Please try again later.
@@ -43,9 +42,9 @@ export function FontsPage() {
             <main className="flex-1 p-1">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-3xl font-bold">Fonts</h1>
-                    <Button onClick={() => setIsModalOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4"/> Add New Font
-                    </Button>
+                    {/*<Button onClick={() => setIsModalOpen(true)}>*/}
+                    {/*    <Plus className="mr-2 h-4 w-4"/> Add New Font*/}
+                    {/*</Button>*/}
                 </div>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {fonts?.map((font) => (
@@ -67,7 +66,7 @@ export function FontsPage() {
                     ))}
                 </div>
             </main>
-            <FontCreationModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            <EnhancedFontCreationModal/>
         </div>
     );
 }

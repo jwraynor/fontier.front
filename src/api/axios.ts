@@ -1,7 +1,8 @@
 import axios from 'axios';
+//setups up dotenv
 
 const api = axios.create({
-    baseURL: 'http://192.168.1.36:6968/api',
+    baseURL: 'http://vos.wtf:6968',
     headers: {
         'Content-Type': 'application/json',
     },
