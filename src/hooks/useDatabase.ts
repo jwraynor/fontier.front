@@ -172,6 +172,52 @@ export const useDatabase = () => {
         });
     };
 
+    const useCreateLibrary = (): UseMutationResult<Library, Error, { name: string; description: string }> => {
+        return useMutation({
+            mutationFn: (libraryData) => libraryService.createLibrary(libraryData).then(res => res.data),
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['libraries'] }).then();
+            },
+        });
+    };
+
+    const useUpdateLibrary = (): UseMutationResult<Library, Error, { id: number; name: string; description: string }> => {
+        return useMutation({
+            mutationFn: (libraryData) => libraryService.updateLibrary(libraryData.id, libraryData).then(res => res.data),
+            onSuccess: (updatedLibrary) => {
+                queryClient.invalidateQueries({ queryKey: ['libraries'] }).then();
+                queryClient.invalidateQueries({ queryKey: ['library', updatedLibrary.id] }).then();
+            },
+        });
+    };
+
+    const useAssignFontToLibrary = (): UseMutationResult<void, Error, { libraryId: number; fontId: number }> => {
+        return useMutation({
+            mutationFn: ({ libraryId, fontId }) =>
+                libraryService.addFontToLibrary(libraryId, fontId).then(res => res.data),
+            onSuccess: (_, { libraryId }) => {
+                queryClient.invalidateQueries({ queryKey: ['libraryFonts', libraryId] }).then();
+            },
+        });
+    };
+
+    const useUnassignFontFromLibrary = (): UseMutationResult<void, Error, { libraryId: number; fontId: number }> => {
+        return useMutation({
+            mutationFn: ({ libraryId, fontId }) =>
+                libraryService.removeFontFromLibrary(libraryId, fontId).then(res => res.data),
+            onSuccess: (_, { libraryId }) => {
+                queryClient.invalidateQueries({ queryKey: ['libraryFonts', libraryId] }).then();
+            },
+        });
+    };
+
+    const useLibraryFonts = (id: number): UseQueryResult<Font[], Error> => {
+        return useQuery({
+            queryKey: ['libraryFonts', id],
+            queryFn: () => libraryService.getLibraryFonts(id).then(res => res.data)
+        });
+    };
+
 
     return {
         useClients,
@@ -194,6 +240,11 @@ export const useDatabase = () => {
         useUnassignFontFromClient,
         useAssignGroupToClient,
         useUnassignGroupFromClient,
+        useCreateLibrary,
+        useUpdateLibrary,
+        useAssignFontToLibrary,
+        useUnassignFontFromLibrary,
+        useLibraryFonts,
     };
 };
 

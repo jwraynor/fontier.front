@@ -1,9 +1,9 @@
-import  { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import Modal from "@/components/modal";
-import DragDropManagement from "@/components/draggable.tsx";
-import { Client, Library as LibraryType, Font, Group } from '@/api/types';
-import useDatabase from "@/hooks/useDatabase";
+import {useState, useEffect} from 'react';
+import {Button} from "@/components/ui/button.tsx";
+import Modal from "@/components/modals/Modal.tsx";
+import DragDropManagement from "@/components/modals/draggable.tsx";
+import {Client, Library as LibraryType, Font, Group} from '@/api/types.ts';
+import useDatabase from "@/hooks/useDatabase.ts";
 
 interface ClientManagementModalProps {
     isOpen: boolean;
@@ -11,7 +11,7 @@ interface ClientManagementModalProps {
     client: Client | null;
 }
 
-export function ClientManagementModal({ isOpen, onClose, client }: ClientManagementModalProps) {
+export function ClientModals({isOpen, onClose, client}: ClientManagementModalProps) {
     const {
         useClientLibraries,
         useClientFonts,
@@ -28,12 +28,12 @@ export function ClientManagementModal({ isOpen, onClose, client }: ClientManagem
     } = useDatabase();
 
     const [activeTab, setActiveTab] = useState<'libraries' | 'fonts' | 'groups'>('libraries');
-    const { data: clientLibraries, isLoading: isLoadingClientLibraries } = useClientLibraries(client?.hwid || '');
-    const { data: clientFonts, isLoading: isLoadingClientFonts } = useClientFonts(client?.hwid || '');
-    const { data: clientGroups, isLoading: isLoadingClientGroups } = useClientGroups(client?.hwid || '');
-    const { data: allLibraries, isLoading: isLoadingAllLibraries } = useLibraries();
-    const { data: allFonts, isLoading: isLoadingAllFonts } = useFonts();
-    const { data: allGroups, isLoading: isLoadingAllGroups } = useGroups();
+    const {data: clientLibraries, isLoading: isLoadingClientLibraries} = useClientLibraries(client?.hwid || '');
+    const {data: clientFonts, isLoading: isLoadingClientFonts} = useClientFonts(client?.hwid || '');
+    const {data: clientGroups, isLoading: isLoadingClientGroups} = useClientGroups(client?.hwid || '');
+    const {data: allLibraries, isLoading: isLoadingAllLibraries} = useLibraries();
+    const {data: allFonts, isLoading: isLoadingAllFonts} = useFonts();
+    const {data: allGroups, isLoading: isLoadingAllGroups} = useGroups();
 
     const isLoading = isLoadingClientLibraries || isLoadingClientFonts || isLoadingClientGroups ||
         isLoadingAllLibraries || isLoadingAllFonts || isLoadingAllGroups;
@@ -70,7 +70,7 @@ export function ClientManagementModal({ isOpen, onClose, client }: ClientManagem
     const handleAssignLibrary = async (library: LibraryType) => {
         if (client) {
             try {
-                await assignLibraryMutation.mutateAsync({ clientId: client.hwid, libraryId: library.id });
+                await assignLibraryMutation.mutateAsync({clientId: client.hwid, libraryId: library.id});
             } catch (error) {
                 console.error('Failed to assign library:', error);
             }
@@ -80,7 +80,7 @@ export function ClientManagementModal({ isOpen, onClose, client }: ClientManagem
     const handleUnassignLibrary = async (library: LibraryType) => {
         if (client) {
             try {
-                await unassignLibraryMutation.mutateAsync({ clientId: client.hwid, libraryId: library.id });
+                await unassignLibraryMutation.mutateAsync({clientId: client.hwid, libraryId: library.id});
             } catch (error) {
                 console.error('Failed to unassign library:', error);
             }
@@ -90,7 +90,7 @@ export function ClientManagementModal({ isOpen, onClose, client }: ClientManagem
     const handleAssignFont = async (font: Font) => {
         if (client) {
             try {
-                await assignFontMutation.mutateAsync({ clientId: client.hwid, fontId: font.id });
+                await assignFontMutation.mutateAsync({clientId: client.hwid, fontId: font.id});
             } catch (error) {
                 console.error('Failed to assign font:', error);
             }
@@ -100,7 +100,7 @@ export function ClientManagementModal({ isOpen, onClose, client }: ClientManagem
     const handleUnassignFont = async (font: Font) => {
         if (client) {
             try {
-                await unassignFontMutation.mutateAsync({ clientId: client.hwid, fontId: font.id });
+                await unassignFontMutation.mutateAsync({clientId: client.hwid, fontId: font.id});
             } catch (error) {
                 console.error('Failed to unassign font:', error);
             }
@@ -110,7 +110,7 @@ export function ClientManagementModal({ isOpen, onClose, client }: ClientManagem
     const handleAssignGroup = async (group: Group) => {
         if (client) {
             try {
-                await assignGroupMutation.mutateAsync({ clientId: client.hwid, groupId: group.id });
+                await assignGroupMutation.mutateAsync({clientId: client.hwid, groupId: group.id});
             } catch (error) {
                 console.error('Failed to assign group:', error);
             }
@@ -120,7 +120,7 @@ export function ClientManagementModal({ isOpen, onClose, client }: ClientManagem
     const handleUnassignGroup = async (group: Group) => {
         if (client) {
             try {
-                await unassignGroupMutation.mutateAsync({ clientId: client.hwid, groupId: group.id });
+                await unassignGroupMutation.mutateAsync({clientId: client.hwid, groupId: group.id});
             } catch (error) {
                 console.error('Failed to unassign group:', error);
             }

@@ -37,8 +37,12 @@ export const libraryService = {
     getLibraries: (): Promise<AxiosResponse<Library[]>> => api.get('/libraries'),
     getLibraryById: (id: number): Promise<AxiosResponse<Library>> => api.get(`/libraries/${id}`),
     createLibrary: (libraryData: Omit<Library, 'id' | 'createdAt' | 'updatedAt'>): Promise<AxiosResponse<Library>> => api.post('/libraries', libraryData),
-    addFontToLibrary: (libraryId: number, fontId: number): Promise<AxiosResponse<void>> => api.post(`/libraries/${libraryId}/fonts`, {fontId}),
+    updateLibrary: (id: number, libraryData: Partial<Omit<Library, 'id' | 'createdAt' | 'updatedAt'>>): Promise<AxiosResponse<Library>> => api.put(`/libraries/${id}`, libraryData),
+    getLibraryFonts: (id: number): Promise<AxiosResponse<Font[]>> => api.get(`/libraries/${id}/fonts`),
+    addFontToLibrary: (libraryId: number, fontId: number): Promise<AxiosResponse<void>> => api.post(`/libraries/${libraryId}/fonts`, { fontId }),
+    removeFontFromLibrary: (libraryId: number, fontId: number): Promise<AxiosResponse<void>> => api.delete(`/libraries/${libraryId}/fonts/${fontId}`),
 };
+
 
 export const groupService = {
     getGroups: (): Promise<AxiosResponse<Group[]>> => api.get('/groups'),
